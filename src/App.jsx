@@ -6,7 +6,7 @@ import './App.css';
 function App() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [events, setEvents] = useState([]); // Store the list of events here
+  const [events, setEvents] = useState([]); 
 
   // 1. LOGIN
   const login = useGoogleLogin({
@@ -25,7 +25,7 @@ function App() {
         .then((res) => setProfile(res.data))
         .catch((err) => console.error(err));
 
-      // B. Get Upcoming Events (So you can see what you saved)
+      // B. Get Upcoming Events
       fetchEvents();
     }
   }, [user]);
@@ -36,7 +36,7 @@ function App() {
       .get('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
         headers: { Authorization: `Bearer ${user.access_token}` },
         params: {
-          timeMinwf: new Date().toISOString(), // Only show future/recent events
+          timeMin: new Date().toISOString(), 
           maxResults: 10,
           singleEvents: true,
           orderBy: 'startTime',
@@ -72,10 +72,6 @@ function App() {
             <ScheduleForm 
               token={user.access_token} 
               onEventAdded={(newEvent) => setEvents([...events, newEvent])} 
-              onEventUpdated={(updatedEvent) => {
-                setEvents(events.map(ev => ev.id === updatedEvent.id ? updatedEvent : ev));
-              }}
-              events={events} // Pass events to find one to edit if needed
             />
 
             {/* RIGHT: Event List */}
@@ -84,14 +80,7 @@ function App() {
               {events.length === 0 && <p>No upcoming lectures found.</p>}
               
               {events.map((event) => (
-                <EventCard 
-                  key={event.id} 
-                  event={event} 
-                  // When clicking edit, we dispatch a custom event or manage state. 
-                  //Cw: For simplicity, we'll pass a setter to the form via a shared context or prop, 
-                  // but here let's trigger the edit directly.
-                  onEdit={() => document.dispatchEvent(new CustomEvent('edit-event', { detailwh: event }))}
-                />
+                <EventCard key={event.id} event={event} />
               ))}
             </div>
           </div>
@@ -110,101 +99,82 @@ function App() {
 }
 
 // ---------------------------------------------------------------------------
-// FORM COMPONENT (Handles Adding AND Editing)
+// FORM COMPONENT (Start Time & End Time)
 // ---------------------------------------------------------------------------
-function ScheduleForm({ token, onEventAdded, onEventUpdated }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState(null);
-
+function ScheduleForm({ token, onEventAdded }) {
   const [formData, setFormData] = useState({
     lecture: '',
+    lecturer: '',
     date: '',
-    time: '',
-    duration: 60,
+    startTime: '',
+    endTime: '',
   });
-
-  // Listen for "Edit" clicks from the list
-  useEffect(() => {
-    const handleEditEvent = (e) => {
-      const event = e.detail;
-      const startDate = new Date(event.start.dateTime || event.start.date);
-      const endDate = new Date(event.end.dateTime || event.end.date);
-      
-      // Calculate duration in minutes
-      const durationMins = (endDate - startDate) / 60000;
-
-      setIsEditing(true);
-      setEditId(event.id);
-      setFormData({
-        lecture: event.summary,
-        date: startDate.toISOString().split('T')[0], // YYYY-MM-DD
-        time: startDate.toTimeString().slice(0, 5),   // HH:MM
-        duration: durationMins
-      });
-    };
-
-    document.addEventListener('edit-event', handleEditEvent);
-    return () => document.removeEventListener('edit-event', handleEditEvent);
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const startTime = new Date(`${formData.date}T${formData.time}`);
-    const endTime = new Date(startTime.getTime() + formData.duration * 60000);
+
+    // 1. Construct Date Objects
+    const startDateTime = new Date(`${formData.date}T${formData.startTime}`);
+    const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
+
+    // Basic Validation
+    if (endDateTime <= startDateTime) {
+      alert("End Time must be after Start Time");
+      return;
+    }
 
     const eventPayload = {
-      summary: formData.lecture,
-      start: { dateTime: startTime.toISOString() },
-      end: { dateTime: endTime.toISOString() },
+      summary: formData.lecture,       // Title
+      description: formData.lecturer,  // Description
+      start: { dateTime: startDateTime.toISOString() },
+      end: { dateTime: endDateTime.toISOString() },
     };
 
     try {
-      if (isEditing) {
-        // UPDATE Existing Event (PUT)
-        const res = await axios.put(
-          `https://www.googleapis.com/calendar/v3/calendars/primary/events/${editId}`,
-          eventPayload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        onEventUpdated(res.data);
-        alert('Lecture updated!');
-        setIsEditing(false); // Reset mode
-      } else {
-        // CREATE New Event (POST)
-        const res = await axios.post(
-          'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-          eventPayload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        onEventAdded(res.data);
-        alert('Lecture added!');
-      }
+      // CREATE New Event (POST)
+      const res = await axios.post(
+        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+        eventPayload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      onEventAdded(res.data);
+      alert('Lecture added!');
 
       // Reset Form
-      setFormData({ lecture: '', date: '', time: '', duration: 60 });
-      setEditId(null);
+      setFormData({ 
+        lecture: '', 
+        lecturer: '', 
+        date: '', 
+        startTime: '', 
+        endTime: '' 
+      });
     } catch (error) {
       console.error(error);
       alert('Error saving event');
     }
   };
 
-  const cancelEdit = () => {
-    setIsEditing(false);
-    setFormData({ lecture: '', date: '', time: '', duration: 60 });
-    setEditId(null);
-  };
-
   return (
     <form onSubmit={handleSubmit} className="schedule-form">
-      <h3>{isEditing ? 'Edit Lecture' : 'Add a Lecture'}</h3>
+      <h3>Add a Lecture</h3>
       
-      <label>Lecture Name</label>
+      <label>Lecture (Title)</label>
       <input 
         type="text" 
         value={formData.lecture}
         required 
+        placeholder="e.g. Object Oriented Programming"
         onChange={e => setFormData({...formData, lecture: e.target.value})} 
+      />
+
+      <label>Lecturer Name (Description)</label>
+      <input 
+        type="text" 
+        value={formData.lecturer}
+        required 
+        placeholder="e.g. Dr. Smith"
+        onChange={e => setFormData({...formData, lecturer: e.target.value})} 
       />
 
       <label>Date</label>
@@ -220,50 +190,55 @@ function ScheduleForm({ token, onEventAdded, onEventUpdated }) {
           <label>Start Time</label>
           <input 
             type="time" 
-            value={formData.time}
+            value={formData.startTime}
             required 
-            onChange={e => setFormData({...formData, time: e.target.value})} 
+            onChange={e => setFormData({...formData, startTime: e.target.value})} 
           />
         </div>
         <div style={{flex: 1}}>
-          <label>Duration (mins)</label>
+          <label>End Time</label>
           <input 
-            type="number" 
-            value={formData.duration}
-            onChange={e => setFormData({...formData, duration: e.target.value})} 
+            type="time" 
+            value={formData.endTime}
+            required 
+            onChange={e => setFormData({...formData, endTime: e.target.value})} 
           />
         </div>
       </div>
 
-      <button type="submit" className={isEditing ? 'btn-update' : 'btn-add'}>
-        {isEditing ? 'Update Schedule' : 'Add to Calendar'}
+      <button type="submit" className="btn-add">
+        Add to Calendar
       </button>
-
-      {isEditing && (
-        <button type="button" onClick={cancelEdit} className="btn-cancel">
-          Cancel
-        </button>
-      )}
     </form>
   );
 }
 
 // ---------------------------------------------------------------------------
-// EVENT CARD COMPONENT
+// EVENT CARD COMPONENT (Safe View)
 // ---------------------------------------------------------------------------
-function EventCard({ event, onEdit }) {
-  // Format Date nicelu
-  const startDate = new Date(event.start.dateTime || event.start.date);
-  const timeString = startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+function EventCard({ event }) {
+  // Safety check: sometimes start.dateTime is undefined for all-day events
+  const startRaw = event.start?.dateTime || event.start?.date;
+  const endRaw = event.end?.dateTime || event.end?.date;
+  
+  if (!startRaw) return null; // Skip invalid events
+
+  const startDate = new Date(startRaw);
+  const endDate = new Date(endRaw);
+
   const dateString = startDate.toLocaleDateString();
+  const startTimeString = startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  const endTimeString = endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
   return (
     <div className="event-card">
       <div className="event-info">
         <h4>{event.summary}</h4>
-        <p>{dateString} at {timeString}</p>
+        {/* Show Lecturer (Description) if it exists */}
+        {event.description && <p style={{fontStyle: 'italic', color: '#888'}}>{event.description}</p>}
+        <p>{dateString}</p>
+        <p style={{color: '#4285F4'}}>{startTimeString} - {endTimeString}</p>
       </div>
-      <button onClick={onEdit} className="btn-edit-icon">✏️</button>
     </div>
   )
 }
