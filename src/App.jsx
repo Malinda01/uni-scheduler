@@ -23,9 +23,21 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [events, setEvents] = useState([]); 
 
+  // --- NEW: CHECK LOCAL STORAGE ON STARTUP ---
+  useEffect(() => {
+    const storedUser = localStorage.getItem('google_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   // LOGIN
   const login = useGoogleLogin({
-    onSuccess: (codeResponse) => setUser(codeResponse),
+    onSuccess: (codeResponse) => {
+      setUser(codeResponse);
+      // --- NEW: SAVE TO LOCAL STORAGE ---
+      localStorage.setItem('google_user', JSON.stringify(codeResponse));
+    },
     scope: 'https://www.googleapis.com/auth/calendar.events',
   });
 
@@ -37,7 +49,13 @@ function App() {
         headers: { Authorization: `Bearer ${user.access_token}`, Accept: 'application/json' }
       })
       .then((res) => setProfile(res.data))
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        // --- NEW: AUTO LOGOUT IF TOKEN EXPIRED ---
+        console.log(err);
+        if (err.response && err.response.status === 401) {
+          logOut(); 
+        }
+      });
 
       // Get Events
       fetchEvents();
@@ -45,6 +63,9 @@ function App() {
   }, [user]);
 
   const fetchEvents = () => {
+    // If no user, stop
+    if (!user) return;
+
     axios.get('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
         headers: { Authorization: `Bearer ${user.access_token}` },
         params: {
@@ -55,13 +76,20 @@ function App() {
         },
       })
       .then((res) => setEvents(res.data.items))
-      .catch((error) => console.error("Error fetching events", error));
+      .catch((error) => {
+        console.error("Error fetching events", error);
+        if (error.response && error.response.status === 401) {
+          logOut(); // Log out if token is invalid
+        }
+      });
   };
 
   const logOut = () => {
     setUser(null);
     setProfile(null);
     setEvents([]);
+    // --- NEW: CLEAR LOCAL STORAGE ---
+    localStorage.removeItem('google_user');
   };
 
   return (
@@ -69,13 +97,14 @@ function App() {
       {profile ? (
         <div>
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '15px', alignItems: 'center' }}>
+            {/* Profile Picture with name */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h3>{profile.name}</h3>
               <img src={profile.picture} alt="profile" style={{ borderRadius: '50%', width: '40px' }} />
             </div>
+            {/* Logout button */}
             <button onClick={logOut} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '8px 15px', cursor: 'pointer', borderRadius: '4px' }}>Log out</button>
-            
           </div>
           <hr />
 
