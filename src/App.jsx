@@ -70,11 +70,12 @@ function App() {
         <div>
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', alignItems: 'center' }}>
-            <button onClick={logOut} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '8px 15px', cursor: 'pointer', borderRadius: '4px' }}>Log out</button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h3>{profile.name}</h3>
               <img src={profile.picture} alt="profile" style={{ borderRadius: '50%', width: '40px' }} />
             </div>
+            <button onClick={logOut} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '8px 15px', cursor: 'pointer', borderRadius: '4px' }}>Log out</button>
+            
           </div>
           <hr />
 
