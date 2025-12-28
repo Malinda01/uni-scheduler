@@ -1,16 +1,96 @@
-# React + Vite
+# 📅 UniScheduler - University Schedule Sync
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A lightweight, serverless React application that allows students to easily schedule their university lectures and sync them directly to their **Google Calendar**.
 
-Currently, two official plugins are available:
+Built with **React 19**, **Vite**, and the **Google Calendar API**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+* **One-Click Login:** Secure sign-in using your Google Account.
+* **Direct Sync:** Adds events directly to your primary Google Calendar.
+* **Customizable Schedule:**
+    * Set Lecture Name & Lecturer Name.
+    * Pick Date, Start Time, and End Time.
+    * **🎨 Color Coding:** Choose from 11 distinct Google Calendar colors to organize your subjects.
+* **Upcoming Dashboard:** View your upcoming scheduled classes directly within the app.
+* **Persistent Login:** Stays logged in even after refreshing or closing the browser.
+* **Serverless:** Runs entirely in the browser—no backend server required.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+* [React](https://react.dev/) (v19)
+* [Vite](https://vitejs.dev/)
+* [Google OAuth 2.0](https://developers.google.com/identity/protocols/oauth2)
+* [Axios](https://axios-http.com/)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 📦 Installation & Setup
+
+Follow these steps to run the project locally.
+
+### 1. Clone the Repository
+```bash
+git clone [https://github.com/YOUR_USERNAME/uni-scheduler.git](https://github.com/YOUR_USERNAME/uni-scheduler.git)
+cd uni-scheduler
+2. Install Dependencies
+Bash
+
+npm install
+3. Configure Google Cloud (Crucial Step)
+To make the login work, you need a Google Cloud Client ID.
+
+Go to the Google Cloud Console.
+
+Create a Project (e.g., "UniScheduler").
+
+Enable API: Go to "APIs & Services" > "Library", search for Google Calendar API, and enable it.
+
+OAuth Consent Screen:
+
+Select "External" User Type.
+
+Fill in the required contact details.
+
+Scopes: Add .../auth/calendar.events scope.
+
+Test Users: Add your own email address so you can log in during development.
+
+Create Credentials:
+
+Go to "Credentials" > "Create Credentials" > "OAuth Client ID".
+
+Application Type: Web application.
+
+Authorized JavaScript origins: Add http://localhost:5173 (or your local port).
+
+Copy the Client ID.
+
+4. Add Client ID to Project
+Open src/main.jsx and replace the placeholder with your actual Client ID:
+
+JavaScript
+
+const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+(Note: For production, it is recommended to store this in a .env file)
+
+5. Run the App
+Bash
+
+npm run dev
+Open your browser to http://localhost:5173.
+
+🌍 Deployment
+This project is optimized for deployment on Netlify or Vercel.
+
+Push your code to GitHub.
+
+Import the project into Netlify/Vercel.
+
+Important: Go back to your Google Cloud Console > Credentials and add your new production URL (e.g., https://uni-scheduler.netlify.app) to the Authorized JavaScript origins.
+
+🤝 Contributing
+Contributions are welcome! Feel free to open an issue or submit a pull request.
+
+📄 License
+This project is open-source and available under the MIT License.
