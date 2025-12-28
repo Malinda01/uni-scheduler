@@ -11,9 +11,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +24,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -39,4 +42,111 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* --- LAYOUT GRID --- */
+.main-grid {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* --- FORM STYLES --- */
+.schedule-form {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  text-align: left;
+  background: #2a2a2a;
+  /* Dark background to match Vite theme */
+  padding: 20px;
+  border-radius: 12px;
+  height: fit-content;
+}
+
+.schedule-form input {
+  display: block;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1a1a1a;
+  color: white;
+  box-sizing: border-box;
+  /* Fix padding width issues */
+}
+
+/* --- BUTTONS --- */
+.btn-add {
+  width: 100%;
+  background-color: #4285F4;
+  color: white;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-update {
+  width: 100%;
+  background-color: #0F9D58;
+  /* Green for update */
+  color: white;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.btn-cancel {
+  width: 100%;
+  background-color: #666;
+  color: white;
+  padding: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+/* --- EVENT LIST STYLES --- */
+.event-list {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  text-align: left;
+}
+
+.event-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.event-info h4 {
+  margin: 0 0 5px 0;
+  color: #fff;
+}
+
+.event-info p {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+.btn-edit-icon {
+  background: transparent;
+  border: 1px solid #444;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+.btn-edit-icon:hover {
+  background: #333;
 }
