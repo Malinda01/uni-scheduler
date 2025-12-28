@@ -30,14 +30,11 @@ Built with **React 19**, **Vite**, and the **Google Calendar API**.
 Follow these steps to run the project locally.
 
 ### 1. Clone the Repository
-```bash
 git clone [https://github.com/YOUR_USERNAME/uni-scheduler.git](https://github.com/YOUR_USERNAME/uni-scheduler.git)
 cd uni-scheduler
-2. Install Dependencies
-Bash
-
+### 2. Install Dependencies
 npm install
-3. Configure Google Cloud (Crucial Step)
+### 3. Configure Google Cloud (Crucial Step)
 To make the login work, you need a Google Cloud Client ID.
 
 Go to the Google Cloud Console.
@@ -66,7 +63,7 @@ Authorized JavaScript origins: Add http://localhost:5173 (or your local port).
 
 Copy the Client ID.
 
-4. Add Client ID to Project
+### 4. Add Client ID to Project
 Open src/main.jsx and replace the placeholder with your actual Client ID:
 
 JavaScript
@@ -74,7 +71,7 @@ JavaScript
 const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
 (Note: For production, it is recommended to store this in a .env file)
 
-5. Run the App
+### 5. Run the App
 Bash
 
 npm run dev
